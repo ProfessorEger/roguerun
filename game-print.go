@@ -13,12 +13,13 @@ func printGrid(grid [][]Cell) {
 		strGrid[i] = make([]string, len(grid[0])*2+1)
 	}
 
-	//updateGrid(grid)
+	updateGrid(grid)
 	fillStrGrid(strGrid, grid)
 	addHorizotalLines(strGrid, grid)
 	addVerticalLines(strGrid, grid)
 	addCorners(strGrid)
 
+	//clearConsole()
 	printStrGrid(strGrid)
 }
 
@@ -107,7 +108,7 @@ func printStrGrid(strGrid [][]string) {
 	}
 }
 
-func ClearConsole() {
+func clearConsole() {
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("cmd", "/c", "cls")
