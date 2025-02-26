@@ -1,10 +1,10 @@
 package main
 
 func main() {
-	//var grid [][]Cell = generateGrid(4, 6)
-	dungeon := readDungeonFromFile("test.txt")
+	dungeon := generateDungeon(3)
 
-	printGrid(dungeon[0])
-	printGrid(dungeon[1])
-	printGrid(dungeon[2])
+	//dungeon := readDungeonFromFile("test.txt")
+	for _, grid := range dungeon {
+		printGrid(grid)
+	}
 }

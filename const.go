@@ -27,7 +27,7 @@ const EMPTY_SYMBOL = "   "
 
 var fillerMap = map[string]Filler{
 	"0": {Empty: true, Symbol: "   "},
-	"1": {Empty: false, Symbol: "   "},
+	"1": {Empty: false, Symbol: " · "},
 }
 
 var creatureMap = map[string]Creature{
