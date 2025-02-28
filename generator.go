@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 )
 
 const (
-	MIN_ROOM_SIZE = 3
+	MIN_ROOM_SIZE = 5
 	MIN_RECT_SIZE = 3
 	MAX_GRID_SIZE = 29
 	MIN_GRID_SIZE = 12
@@ -85,19 +84,7 @@ func (l *Leaf) buildRect() {
 		Size:        [2]int{rectWidth, rectHeight},
 		Coordinates: [2]int{rectX, rectY},
 	}
-
-	fmt.Print(l.Room.Coordinates, l.Room.Size, l.Coordinates)
-	fmt.Println()
 }
-
-/*
-func (l *Leaf) addToSlice(leafs *[]Leaf) {
-	if l == nil {
-		return
-	}
-
-	*leafs = append(*leafs, *l) // Добавляем текущий лист
-}*/
 
 type Rect struct {
 	Size        [2]int
@@ -114,12 +101,12 @@ func generateDungeon(numberOfFloors int) [][][]Cell {
 
 func generateGrid() [][]Cell {
 	root := generateRootLeaf()
-	fmt.Print(root.Size)
-	fmt.Println()
 	grid := createWallGrid(root.Size)
 	smallLeafs := divideIntoSmall(root)
 	generateRooms(smallLeafs)
 	insertRooms(grid, smallLeafs)
+	connectAllRooms(grid, smallLeafs)
+	addBorders(grid)
 
 	return grid
 }
@@ -138,6 +125,17 @@ func createWallGrid(size [2]int) [][]Cell {
 	}
 
 	return grid
+}
+
+func addBorders(grid [][]Cell) {
+	for j := 0; j < len(grid[0]); j++ {
+		grid[0][j].Filler = fillerMap["1"]
+		grid[len(grid)-1][j].Filler = fillerMap["1"]
+	}
+	for i := 0; i < len(grid); i++ {
+		grid[i][0].Filler = fillerMap["1"]
+		grid[i][len(grid[0])-1].Filler = fillerMap["1"]
+	}
 }
 
 func divideIntoSmall(root *Leaf) []*Leaf {
@@ -200,6 +198,124 @@ func insertRoom(grid [][]Cell, leaf *Leaf) {
 	for i := minX; i < maxX; i++ {
 		for j := minY; j < maxY; j++ {
 			grid[i][j].Filler = fillerMap["0"]
+		}
+	}
+}
+
+// Функция для соединения всех комнат в подземелье
+func connectAllRooms(grid [][]Cell, leafs []*Leaf) {
+	// Проверка на наличие как минимум двух комнат
+	if len(leafs) < 2 {
+		return
+	}
+
+	// Создаем граф соединенных комнат
+	connected := make(map[*Leaf]bool)
+	connected[leafs[0]] = true
+
+	// Соединяем все комнаты
+	for len(connected) < len(leafs) {
+		bestDistance := -1
+		var roomA, roomB *Leaf
+
+		// Находим ближайшую пару комнат, одна из которых соединена, а другая нет
+		for connectedLeaf := range connected {
+			for _, otherLeaf := range leafs {
+				if !connected[otherLeaf] {
+					// Вычисляем расстояние между центрами комнат
+					distance := calculateDistance(connectedLeaf, otherLeaf)
+
+					if bestDistance == -1 || distance < bestDistance {
+						bestDistance = distance
+						roomA = connectedLeaf
+						roomB = otherLeaf
+					}
+				}
+			}
+		}
+
+		if roomA != nil && roomB != nil {
+			// Соединяем найденную пару комнат коридором
+			connectRoomsDirectly(grid, roomA, roomB)
+			connected[roomB] = true
+		}
+	}
+}
+
+// Функция для вычисления расстояния между центрами комнат
+func calculateDistance(leafA, leafB *Leaf) int {
+	centerAX := leafA.Room.Coordinates[0] + leafA.Room.Size[0]/2
+	centerAY := leafA.Room.Coordinates[1] + leafA.Room.Size[1]/2
+	centerBX := leafB.Room.Coordinates[0] + leafB.Room.Size[0]/2
+	centerBY := leafB.Room.Coordinates[1] + leafB.Room.Size[1]/2
+
+	// Манхэттенское расстояние
+	return absInt(centerAX-centerBX) + absInt(centerAY-centerBY)
+}
+
+// Вспомогательная функция для вычисления абсолютного значения
+func absInt(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+// Функция для соединения двух комнат напрямую
+func connectRoomsDirectly(grid [][]Cell, leafA, leafB *Leaf) {
+	// Получаем центры комнат
+	startX := leafA.Room.Coordinates[0] + leafA.Room.Size[0]/2
+	startY := leafA.Room.Coordinates[1] + leafA.Room.Size[1]/2
+	endX := leafB.Room.Coordinates[0] + leafB.Room.Size[0]/2
+	endY := leafB.Room.Coordinates[1] + leafB.Room.Size[1]/2
+
+	// Определяем случайно, в каком порядке строить коридор:
+	// сначала по горизонтали, потом по вертикали, или наоборот
+	if rand.Intn(2) == 0 {
+		createHorizontalCorridor(grid, startX, endX, startY)
+		createVerticalCorridor(grid, startY, endY, endX)
+	} else {
+		createVerticalCorridor(grid, startY, endY, startX)
+		createHorizontalCorridor(grid, startX, endX, endY)
+	}
+}
+
+// Функция для создания горизонтального коридора
+func createHorizontalCorridor(grid [][]Cell, startX, endX, y int) {
+	// Определяем начало и конец коридора
+	start := startX
+	end := endX
+
+	if startX > endX {
+		start = endX
+		end = startX
+	}
+
+	// Создаем горизонтальный коридор
+	for x := start; x <= end; x++ {
+		// Проверка границ сетки
+		if x >= 0 && x < len(grid) && y >= 0 && y < len(grid[0]) {
+			grid[x][y].Filler = fillerMap["0"]
+		}
+	}
+}
+
+// Функция для создания вертикального коридора
+func createVerticalCorridor(grid [][]Cell, startY, endY, x int) {
+	// Определяем начало и конец коридора
+	start := startY
+	end := endY
+
+	if startY > endY {
+		start = endY
+		end = startY
+	}
+
+	// Создаем вертикальный коридор
+	for y := start; y <= end; y++ {
+		// Проверка границ сетки
+		if x >= 0 && x < len(grid) && y >= 0 && y < len(grid[0]) {
+			grid[x][y].Filler = fillerMap["0"]
 		}
 	}
 }
