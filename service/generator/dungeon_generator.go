@@ -1,26 +1,25 @@
-package main
+package generator
 
 import (
 	"math/rand"
+	"roguerun/models"
 )
 
-const (
-	MIN_ROOM_SIZE = 5
-	MIN_RECT_SIZE = 3
-	MAX_GRID_SIZE = 29
-	MIN_GRID_SIZE = 12
-)
-
-type Leaf struct {
+type leaf struct {
 	Size        [2]int
 	Coordinates [2]int
-	Room        Rect
+	Room        rect
 
-	RightChild *Leaf
-	LeftChild  *Leaf
+	RightChild *leaf
+	LeftChild  *leaf
 }
 
-func (l *Leaf) split() (isSmall bool) {
+type rect struct {
+	Size        [2]int
+	Coordinates [2]int
+}
+
+func (l *leaf) split() (isSmall bool) {
 	width, height := l.Size[0], l.Size[1]
 	var splitVertical bool
 
@@ -35,33 +34,33 @@ func (l *Leaf) split() (isSmall bool) {
 
 	maxSplit := 0
 	if splitVertical {
-		maxSplit = width - MIN_ROOM_SIZE
+		maxSplit = width - models.MIN_LEAF_SIZE
 	} else {
-		maxSplit = height - MIN_ROOM_SIZE
+		maxSplit = height - models.MIN_LEAF_SIZE
 	}
 
-	if maxSplit <= MIN_ROOM_SIZE {
+	if maxSplit <= models.MIN_LEAF_SIZE {
 		// Недостаточно места для разбиения
 		return true
 	}
 
-	splitPos := rand.Intn(maxSplit-MIN_ROOM_SIZE) + MIN_ROOM_SIZE
+	splitPos := rand.Intn(maxSplit-models.MIN_LEAF_SIZE) + models.MIN_LEAF_SIZE
 
 	if splitVertical {
-		l.LeftChild = &Leaf{
+		l.LeftChild = &leaf{
 			Size:        [2]int{splitPos, height},
 			Coordinates: l.Coordinates,
 		}
-		l.RightChild = &Leaf{
+		l.RightChild = &leaf{
 			Size:        [2]int{width - splitPos, height},
 			Coordinates: [2]int{l.Coordinates[0] + splitPos, l.Coordinates[1]},
 		}
 	} else {
-		l.LeftChild = &Leaf{
+		l.LeftChild = &leaf{
 			Size:        [2]int{width, splitPos},
 			Coordinates: l.Coordinates,
 		}
-		l.RightChild = &Leaf{
+		l.RightChild = &leaf{
 			Size:        [2]int{width, height - splitPos},
 			Coordinates: [2]int{l.Coordinates[0], l.Coordinates[1] + splitPos},
 		}
@@ -70,36 +69,31 @@ func (l *Leaf) split() (isSmall bool) {
 	return false
 }
 
-func (l *Leaf) buildRect() {
+func (l *leaf) buildRect() {
 	// Случайные размеры прямоугольника
-	rectWidth := rand.Intn(l.Size[0]-MIN_RECT_SIZE+1) + MIN_RECT_SIZE
-	rectHeight := rand.Intn(l.Size[1]-MIN_RECT_SIZE+1) + MIN_RECT_SIZE
+	rectWidth := rand.Intn(l.Size[0]-models.MIN_RECT_SIZE+1) + models.MIN_RECT_SIZE
+	rectHeight := rand.Intn(l.Size[1]-models.MIN_RECT_SIZE+1) + models.MIN_RECT_SIZE
 
 	// Случайные координаты для размещения прямоугольника внутри Leaf
 	rectX := rand.Intn(l.Size[0]-rectWidth+1) + l.Coordinates[0]
 	rectY := rand.Intn(l.Size[1]-rectHeight+1) + l.Coordinates[1]
 
 	// Создание прямоугольника и присвоение в поле Room
-	l.Room = Rect{
+	l.Room = rect{
 		Size:        [2]int{rectWidth, rectHeight},
 		Coordinates: [2]int{rectX, rectY},
 	}
 }
 
-type Rect struct {
-	Size        [2]int
-	Coordinates [2]int
-}
-
-func generateDungeon(numberOfFloors int) [][][]Cell {
-	var dungeon [][][]Cell = make([][][]Cell, numberOfFloors)
+func GenerateDungeon(numberOfFloors int) [][][]models.Cell {
+	var dungeon [][][]models.Cell = make([][][]models.Cell, numberOfFloors)
 	for i := 0; i < numberOfFloors; i++ {
 		dungeon[i] = generateGrid()
 	}
 	return dungeon
 }
 
-func generateGrid() [][]Cell {
+func generateGrid() [][]models.Cell {
 	root := generateRootLeaf()
 	grid := createWallGrid(root.Size)
 	smallLeafs := divideIntoSmall(root)
@@ -111,37 +105,37 @@ func generateGrid() [][]Cell {
 	return grid
 }
 
-func createWallGrid(size [2]int) [][]Cell {
-	var grid [][]Cell = make([][]Cell, size[0])
+func createWallGrid(size [2]int) [][]models.Cell {
+	var grid [][]models.Cell = make([][]models.Cell, size[0])
 	for i := 0; i < size[0]; i++ {
-		grid[i] = make([]Cell, size[1])
+		grid[i] = make([]models.Cell, size[1])
 
 		for j := 0; j < size[1]; j++ {
 			grid[i][j].Coordinates = [2]int{i, j}
-			grid[i][j].Filler = fillerMap["1"]
-			grid[i][j].Creature = creatureMap["0"]
-			grid[i][j].Object = objectMap["0"]
+			grid[i][j].Filler = models.FillerMap["1"]
+			grid[i][j].Creature = models.CreatureMap["0"]
+			grid[i][j].Object = models.ObjectMap["0"]
 		}
 	}
 
 	return grid
 }
 
-func addBorders(grid [][]Cell) {
+func addBorders(grid [][]models.Cell) {
 	for j := 0; j < len(grid[0]); j++ {
-		grid[0][j].Filler = fillerMap["1"]
-		grid[len(grid)-1][j].Filler = fillerMap["1"]
+		grid[0][j].Filler = models.FillerMap["1"]
+		grid[len(grid)-1][j].Filler = models.FillerMap["1"]
 	}
 	for i := 0; i < len(grid); i++ {
-		grid[i][0].Filler = fillerMap["1"]
-		grid[i][len(grid[0])-1].Filler = fillerMap["1"]
+		grid[i][0].Filler = models.FillerMap["1"]
+		grid[i][len(grid[0])-1].Filler = models.FillerMap["1"]
 	}
 }
 
-func divideIntoSmall(root *Leaf) []*Leaf {
-	smallLeafs := []*Leaf{}
-	readyToDivide := []*Leaf{}
-	bufferReadyToDivide := []*Leaf{root}
+func divideIntoSmall(root *leaf) []*leaf {
+	smallLeafs := []*leaf{}
+	readyToDivide := []*leaf{}
+	bufferReadyToDivide := []*leaf{root}
 
 	readyToDivide = append(readyToDivide, bufferReadyToDivide...)
 
@@ -165,29 +159,29 @@ func divideIntoSmall(root *Leaf) []*Leaf {
 	}
 }
 
-func generateRooms(leafs []*Leaf) {
+func generateRooms(leafs []*leaf) {
 	for i := 0; i < len(leafs); i++ {
 		leafs[i].buildRect()
 	}
 }
 
-func generateRootLeaf() *Leaf {
-	width := rand.Intn(MAX_GRID_SIZE-MIN_GRID_SIZE+1) + MIN_GRID_SIZE
-	height := rand.Intn(MAX_GRID_SIZE-MIN_GRID_SIZE+1) + MIN_GRID_SIZE
+func generateRootLeaf() *leaf {
+	width := rand.Intn(models.MAX_GRID_SIZE-models.MIN_GRID_SIZE+1) + models.MIN_GRID_SIZE
+	height := rand.Intn(models.MAX_GRID_SIZE-models.MIN_GRID_SIZE+1) + models.MIN_GRID_SIZE
 
-	return &Leaf{
+	return &leaf{
 		Size:        [2]int{width, height},
 		Coordinates: [2]int{0, 0},
 	}
 }
 
-func insertRooms(grid [][]Cell, leafs []*Leaf) {
+func insertRooms(grid [][]models.Cell, leafs []*leaf) {
 	for _, leaf := range leafs {
 		insertRoom(grid, leaf)
 	}
 }
 
-func insertRoom(grid [][]Cell, leaf *Leaf) {
+func insertRoom(grid [][]models.Cell, leaf *leaf) {
 	minX := leaf.Room.Coordinates[0]
 	minY := leaf.Room.Coordinates[1]
 	size := leaf.Room.Size
@@ -197,26 +191,26 @@ func insertRoom(grid [][]Cell, leaf *Leaf) {
 
 	for i := minX; i < maxX; i++ {
 		for j := minY; j < maxY; j++ {
-			grid[i][j].Filler = fillerMap["0"]
+			grid[i][j].Filler = models.FillerMap["0"]
 		}
 	}
 }
 
 // Функция для соединения всех комнат в подземелье
-func connectAllRooms(grid [][]Cell, leafs []*Leaf) {
+func connectAllRooms(grid [][]models.Cell, leafs []*leaf) {
 	// Проверка на наличие как минимум двух комнат
 	if len(leafs) < 2 {
 		return
 	}
 
 	// Создаем граф соединенных комнат
-	connected := make(map[*Leaf]bool)
+	connected := make(map[*leaf]bool)
 	connected[leafs[0]] = true
 
 	// Соединяем все комнаты
 	for len(connected) < len(leafs) {
 		bestDistance := -1
-		var roomA, roomB *Leaf
+		var roomA, roomB *leaf
 
 		// Находим ближайшую пару комнат, одна из которых соединена, а другая нет
 		for connectedLeaf := range connected {
@@ -243,7 +237,7 @@ func connectAllRooms(grid [][]Cell, leafs []*Leaf) {
 }
 
 // Функция для вычисления расстояния между центрами комнат
-func calculateDistance(leafA, leafB *Leaf) int {
+func calculateDistance(leafA, leafB *leaf) int {
 	centerAX := leafA.Room.Coordinates[0] + leafA.Room.Size[0]/2
 	centerAY := leafA.Room.Coordinates[1] + leafA.Room.Size[1]/2
 	centerBX := leafB.Room.Coordinates[0] + leafB.Room.Size[0]/2
@@ -262,7 +256,7 @@ func absInt(x int) int {
 }
 
 // Функция для соединения двух комнат напрямую
-func connectRoomsDirectly(grid [][]Cell, leafA, leafB *Leaf) {
+func connectRoomsDirectly(grid [][]models.Cell, leafA, leafB *leaf) {
 	// Получаем центры комнат
 	startX := leafA.Room.Coordinates[0] + leafA.Room.Size[0]/2
 	startY := leafA.Room.Coordinates[1] + leafA.Room.Size[1]/2
@@ -281,7 +275,7 @@ func connectRoomsDirectly(grid [][]Cell, leafA, leafB *Leaf) {
 }
 
 // Функция для создания горизонтального коридора
-func createHorizontalCorridor(grid [][]Cell, startX, endX, y int) {
+func createHorizontalCorridor(grid [][]models.Cell, startX, endX, y int) {
 	// Определяем начало и конец коридора
 	start := startX
 	end := endX
@@ -295,13 +289,13 @@ func createHorizontalCorridor(grid [][]Cell, startX, endX, y int) {
 	for x := start; x <= end; x++ {
 		// Проверка границ сетки
 		if x >= 0 && x < len(grid) && y >= 0 && y < len(grid[0]) {
-			grid[x][y].Filler = fillerMap["0"]
+			grid[x][y].Filler = models.FillerMap["0"]
 		}
 	}
 }
 
 // Функция для создания вертикального коридора
-func createVerticalCorridor(grid [][]Cell, startY, endY, x int) {
+func createVerticalCorridor(grid [][]models.Cell, startY, endY, x int) {
 	// Определяем начало и конец коридора
 	start := startY
 	end := endY
@@ -315,7 +309,7 @@ func createVerticalCorridor(grid [][]Cell, startY, endY, x int) {
 	for y := start; y <= end; y++ {
 		// Проверка границ сетки
 		if x >= 0 && x < len(grid) && y >= 0 && y < len(grid[0]) {
-			grid[x][y].Filler = fillerMap["0"]
+			grid[x][y].Filler = models.FillerMap["0"]
 		}
 	}
 }

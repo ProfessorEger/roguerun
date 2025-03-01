@@ -1,13 +1,14 @@
-package main
+package user_interaction
 
 import (
 	"fmt"
 	"os"
 	"os/exec"
+	"roguerun/models"
 	"runtime"
 )
 
-func printGrid(grid [][]Cell) {
+func PrintGrid(grid [][]models.Cell) {
 	var strGrid = make([][]string, len(grid)*2+1)
 	for i := 0; i < len(grid)*2+1; i++ {
 		strGrid[i] = make([]string, len(grid[0])*2+1)
@@ -23,7 +24,7 @@ func printGrid(grid [][]Cell) {
 	printStrGrid(strGrid)
 }
 
-func updateGrid(grid [][]Cell) {
+func updateGrid(grid [][]models.Cell) {
 	for i := 0; i < len(grid); i++ {
 		for j := 0; j < len(grid[0]); j++ {
 			if !grid[i][j].Filler.Empty {
@@ -33,13 +34,13 @@ func updateGrid(grid [][]Cell) {
 			} else if grid[i][j].Object.IsObject {
 				grid[i][j].Symbol = grid[i][j].Object.Symbol
 			} else {
-				grid[i][j].Symbol = EMPTY_SYMBOL
+				grid[i][j].Symbol = models.EMPTY_SYMBOL
 			}
 		}
 	}
 }
 
-func fillStrGrid(strGrid [][]string, grid [][]Cell) {
+func fillStrGrid(strGrid [][]string, grid [][]models.Cell) {
 	for i := 1; i < len(strGrid); i = i + 2 {
 		for j := 1; j < len(strGrid[0]); j = j + 2 {
 			strGrid[i][j] = grid[(i-1)/2][(j-1)/2].Symbol
@@ -47,7 +48,7 @@ func fillStrGrid(strGrid [][]string, grid [][]Cell) {
 	}
 }
 
-func addHorizotalLines(strGrid [][]string, grid [][]Cell) {
+func addHorizotalLines(strGrid [][]string, grid [][]models.Cell) {
 	for i := 0; i < len(strGrid); i = i + 2 {
 		for j := 1; j < len(strGrid[0]); j = j + 2 {
 			if (((i/2)-1 >= 0 && !grid[(i/2)-1][(j-1)/2].Filler.Empty) && !(i/2 < len(grid) && !grid[i/2][(j-1)/2].Filler.Empty)) || ((i/2 < len(grid) && !grid[i/2][(j-1)/2].Filler.Empty) && !((i/2)-1 >= 0 && !grid[(i/2)-1][(j-1)/2].Filler.Empty)) {
@@ -59,7 +60,7 @@ func addHorizotalLines(strGrid [][]string, grid [][]Cell) {
 	}
 }
 
-func addVerticalLines(strGrid [][]string, grid [][]Cell) {
+func addVerticalLines(strGrid [][]string, grid [][]models.Cell) {
 	for i := 1; i < len(strGrid); i = i + 2 {
 		for j := 0; j < len(strGrid[0]); j = j + 2 {
 			if (((j/2)-1 >= 0 && !grid[(i-1)/2][(j/2)-1].Filler.Empty) && !(j/2 < len(grid[0]) && !grid[(i-1)/2][j/2].Filler.Empty)) || ((j/2 < len(grid[0]) && !grid[(i-1)/2][j/2].Filler.Empty) && !((j/2)-1 >= 0 && !grid[(i-1)/2][(j/2)-1].Filler.Empty)) {

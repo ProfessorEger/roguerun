@@ -1,0 +1,10 @@
+{
+	"MIN_LEAF_SIZE":    4,
+	"MIN_RECT_SIZE":    3,
+	"MAX_GRID_SIZE":    24,
+	"MIN_GRID_SIZE":    12,
+	"NUMBER_OF_FLOORS": 3,
+	
+	"EMPTY_SYMBOL": "   ",
+	"WALL_SYMBOL":  " · "
+} 

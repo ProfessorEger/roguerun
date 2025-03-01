@@ -1,4 +1,4 @@
-package main
+package models
 
 type Creature struct {
 	IsCreature bool
@@ -23,20 +23,27 @@ type Cell struct {
 	Symbol      string
 }
 
-const EMPTY_SYMBOL = "   "
+var (
+	MIN_LEAF_SIZE    int
+	MIN_RECT_SIZE    int
+	MAX_GRID_SIZE    int
+	MIN_GRID_SIZE    int
+	NUMBER_OF_FLOORS int
+	EMPTY_SYMBOL     string
+)
 
-var fillerMap = map[string]Filler{
+var FillerMap = map[string]Filler{
 	"0": {Empty: true, Symbol: "   "},
 	"1": {Empty: false, Symbol: " · "},
 }
 
-var creatureMap = map[string]Creature{
+var CreatureMap = map[string]Creature{
 	"0": {IsCreature: false, Symbol: "   "},
 	"1": {IsCreature: true, Symbol: " M "},
 	"2": {IsCreature: true, Symbol: " A "},
 }
 
-var objectMap = map[string]Object{
+var ObjectMap = map[string]Object{
 	"0": {IsObject: false, Symbol: "   "},
 	"1": {IsObject: true, Symbol: " 1 "},
 	"2": {IsObject: true, Symbol: " 2 "},

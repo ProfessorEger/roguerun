@@ -1,13 +1,14 @@
-package main
+package dungeon_reader
 
 import (
 	"fmt"
 	"os"
+	"roguerun/models"
 	"strings"
 )
 
-func readDungeonFromFile(filename string) [][][]Cell {
-	var dungeon [][][]Cell
+func ReadDungeonFromFile(filename string) [][][]models.Cell {
+	var dungeon [][][]models.Cell
 
 	data, err := os.ReadFile(filename)
 	if err != nil {
@@ -18,12 +19,12 @@ func readDungeonFromFile(filename string) [][][]Cell {
 
 	return dungeon
 }
-func decodeDungeon(strDungeon [][][]string) [][][]Cell {
-	var dungeon [][][]Cell = make([][][]Cell, len(strDungeon))
+func decodeDungeon(strDungeon [][][]string) [][][]models.Cell {
+	var dungeon [][][]models.Cell = make([][][]models.Cell, len(strDungeon))
 	for i := 0; i < len(dungeon); i++ {
-		dungeon[i] = make([][]Cell, len(strDungeon[i]))
+		dungeon[i] = make([][]models.Cell, len(strDungeon[i]))
 		for j := 0; j < len(dungeon[i]); j++ {
-			dungeon[i][j] = make([]Cell, len(strDungeon[i][j]))
+			dungeon[i][j] = make([]models.Cell, len(strDungeon[i][j]))
 			for k := 0; k < len(dungeon[i][j]); k++ {
 				dungeon[i][j][k] = translateStringToCell(strDungeon[i][j][k], [2]int{j, k})
 			}
@@ -32,11 +33,11 @@ func decodeDungeon(strDungeon [][][]string) [][][]Cell {
 	return dungeon
 }
 
-func translateStringToCell(str string, coordinates [2]int) (cell Cell) {
+func translateStringToCell(str string, coordinates [2]int) (cell models.Cell) {
 	cell.Coordinates = coordinates
-	cell.Filler = fillerMap[string(str[0])]
-	cell.Creature = creatureMap[string(str[1])]
-	cell.Object = objectMap[string(str[2])]
+	cell.Filler = models.FillerMap[string(str[0])]
+	cell.Creature = models.CreatureMap[string(str[1])]
+	cell.Object = models.ObjectMap[string(str[2])]
 	return
 }
 
@@ -73,15 +74,3 @@ func divideIntoWords(lines [][]string) [][][]string {
 	}
 	return words
 }
-
-/*
-func printStrDungeon(strDungeon [][][]string) { //temp
-	for _, twoD := range strDungeon {
-		for _, oneD := range twoD {
-			for _, elem := range oneD {
-				fmt.Println(elem)
-			}
-		}
-	}
-}
-*/
