@@ -24,7 +24,7 @@ func PrintGrid(grid [][]models.Cell) {
 	printStrGrid(strGrid)
 }
 
-func updateGrid(grid [][]models.Cell) {
+func updateGrid(grid [][]models.Cell) { // TODO: will be removed?
 	for i := 0; i < len(grid); i++ {
 		for j := 0; j < len(grid[0]); j++ {
 			if !grid[i][j].Filler.Empty {
@@ -40,6 +40,8 @@ func updateGrid(grid [][]models.Cell) {
 	}
 }
 
+// TODO: make a function to convert from grid coordinates to char coordinates and back
+
 func fillStrGrid(strGrid [][]string, grid [][]models.Cell) {
 	for i := 1; i < len(strGrid); i = i + 2 {
 		for j := 1; j < len(strGrid[0]); j = j + 2 {
@@ -47,6 +49,8 @@ func fillStrGrid(strGrid [][]string, grid [][]models.Cell) {
 		}
 	}
 }
+
+// TODO: could you merge addHorizontalLines with addVerticalLines in addLines?
 
 func addHorizotalLines(strGrid [][]string, grid [][]models.Cell) {
 	for i := 0; i < len(strGrid); i = i + 2 {

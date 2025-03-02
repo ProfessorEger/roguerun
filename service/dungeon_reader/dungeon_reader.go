@@ -7,13 +7,36 @@ import (
 	"strings"
 )
 
+// TODO: type Map [][][]models.Cell; // ?
+
+// It would be great if:
+//
+// layer 1:
+// xxx
+// yyy
+// zzz
+//
+// layer 2:
+// aaa
+// bbb
+// ccc
+//
+// In memory: xxxyyyzzzaaabbbccc
+
+// TODO: maybe this is also possible in Go?
+// type Map []Cell
+// func Get(map Map, i int, j int, k int) Cell { return map[i*size*size + j*size + k] }
+
 func ReadDungeonFromFile(filename string) [][][]models.Cell {
 	var dungeon [][][]models.Cell
 
+	array := [3]int{1, 2, 3};
+
 	data, err := os.ReadFile(filename)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return dungeon
+		fmt.Println("Error:", err) // TODO: Println prints to stdout, but it's better to print errors to stderr
+		// TODO: you can do: fmt.Fprintln(os.Stderr, "..."), but I think it's better to pass error to the caller
+		return dungeon // return err?
 	}
 	dungeon = decodeDungeon(divideIntoWords(divideIntoLines(divideIntoParagraphs(string(data)))))
 
@@ -51,6 +74,25 @@ func divideIntoParagraphs(str string) []string {
 
 	return paragraphs
 }
+
+// TODO: why divide into lines takes []string?
+
+// TODO: If you like, you can solve it by bringing bits and pieces of functional programming to Go (how exciting!)
+//
+// func Map[T any, U any](slice []T, fn func(T) U) []U {
+//     result := make([]U, len(slice))
+//     for i, v := range slice {
+//         result[i] = fn(v)
+//     }
+//     return result
+// }
+//
+// paragraphs := SplitParagraphs(text) // Essentially text.Split("\n\n")
+//
+// lines := Map(paragraphs, func(paragraph string) []string {
+//   return SplitLines(paragraph)
+// })
+//
 
 func divideIntoLines(paragraphs []string) [][]string {
 	var lines [][]string
