@@ -41,6 +41,7 @@ func loadConstantsFromFile(filename string) (config *Config, err error) {
 }
 
 func updateModels(config *Config) {
+	// TODO: global will go away?
 	models.MIN_LEAF_SIZE = config.MIN_LEAF_SIZE
 	models.MIN_RECT_SIZE = config.MIN_RECT_SIZE
 	models.MAX_GRID_SIZE = config.MAX_GRID_SIZE
@@ -53,7 +54,7 @@ func updateModels(config *Config) {
 	models.FillerMap["1"] = models.Filler{Empty: false, Symbol: config.WALL_SYMBOL}
 }
 
-func newConfig() *Config {
+func newConfig() *Config { // TODO: default config?
 	return &Config{
 		MIN_LEAF_SIZE:    4,
 		MIN_RECT_SIZE:    3,
