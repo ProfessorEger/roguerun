@@ -135,11 +135,13 @@ func addBorders(grid [][]models.Cell) {
 func divideIntoSmall(root *leaf) []*leaf {
 	smallLeafs := []*leaf{}
 	readyToDivide := []*leaf{}
-	bufferReadyToDivide := []*leaf{root}
-
-	readyToDivide = append(readyToDivide, bufferReadyToDivide...)
+	bufferReadyToDivide := []*leaf{root} // TODO: buffer? Better name?
 
 	for {
+		// TODO: you can have a single queue instead
+		//       push: append(queue, ...);
+		//        pop: element = queue[0], queue = queue[1:]
+
 		readyToDivide = readyToDivide[:0]
 		readyToDivide = append(readyToDivide, bufferReadyToDivide...)
 		bufferReadyToDivide = bufferReadyToDivide[:0]
