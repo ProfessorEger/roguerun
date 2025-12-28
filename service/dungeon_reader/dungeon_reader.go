@@ -30,7 +30,7 @@ import (
 func ReadDungeonFromFile(filename string) [][][]models.Cell {
 	var dungeon [][][]models.Cell
 
-	array := [3]int{1, 2, 3};
+	//array := [3]int{1, 2, 3};
 
 	data, err := os.ReadFile(filename)
 	if err != nil {
